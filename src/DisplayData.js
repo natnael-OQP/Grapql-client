@@ -16,9 +16,19 @@ const DisplayData = () => {
             # }
         }
     `
+    const GET_MOVIE_BY_NAME = gql`
+        query ($name: String!) {
+            movie(name: $name) {
+                name
+                yearOfPublication
+                isInTheaters
+            }
+        }
+    `
+
     const { loading, error, data } = useQuery(UserList)
-    const [fetchMovie, { data: MovieData, loading: MovieLoading }] =
-        useLazyQuery()
+    const [fetchMovie, { data: movieData, loading: movieLoading }] =
+        useLazyQuery(GET_MOVIE_BY_NAME)
 
     const handelChange = (e) => {
         setInput(e.target.value)
@@ -27,8 +37,8 @@ const DisplayData = () => {
     if (loading) return <h3>loading.....</h3>
     if (error) return <h3>{error}</h3>
 
-    // console.log(data)
-    console.log(input)
+    console.log(data)
+    console.log(movieData)
 
     return (
         <div>
@@ -46,7 +56,27 @@ const DisplayData = () => {
                     type="text"
                     placeholder="Search movies"
                 />
-                <button>Fetch Data</button>
+                <button
+                    onClick={() =>
+                        fetchMovie({
+                            variables: {
+                                name: input,
+                            },
+                        })
+                    }
+                >
+                    Fetch Data
+                </button>
+
+                {movieData && (
+                    <div>
+                        <h6>name: {movieData.movie.name}</h6>
+                        <h6>
+                            yearOfPublication:{' '}
+                            {movieData.movie.yearOfPublication}
+                        </h6>
+                    </div>
+                )}
             </div>
         </div>
     )
