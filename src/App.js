@@ -1,12 +1,7 @@
 import './App.css'
 
-import {
-    ApolloClient,
-    InMemoryCache,
-    ApolloProvider,
-    useQuery,
-    gql,
-} from '@apollo/client'
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
+import DisplayData from './DisplayData'
 
 function App() {
     const client = new ApolloClient({
@@ -14,21 +9,11 @@ function App() {
         cache: new InMemoryCache(),
     })
 
-    const UserList = gql`
-        query getUsers {
-            users {
-                name
-                username
-            }
-        }
-    `
-    const { loading, error, data } = useQuery(UserList)
-    console.log(data)
-
     return (
         <ApolloProvider client={client}>
             <div className="App">
-                <h1>hello world</h1>
+                <h2>graphql</h2>
+                <DisplayData />
             </div>
         </ApolloProvider>
     )
