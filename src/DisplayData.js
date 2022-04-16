@@ -1,58 +1,68 @@
-import { gql, useQuery, useLazyQuery } from '@apollo/client'
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { useState } from 'react'
+import { CREATE_USER, GET_MOVIE_BY_NAME, UserList } from './apollo'
 
 const DisplayData = () => {
+    const [search, setSearch] = useState()
     const [input, setInput] = useState()
-    const UserList = gql`
-        # get all users
-        query {
-            users {
-                age
-                name
-                username
-            }
-            # movies {
-            #     input
-            # }
-        }
-    `
-    const GET_MOVIE_BY_NAME = gql`
-        query ($name: String!) {
-            movie(name: $name) {
-                name
-                yearOfPublication
-                isInTheaters
-            }
-        }
-    `
 
-    const { loading, error, data } = useQuery(UserList)
-    const [fetchMovie, { data: movieData, loading: movieLoading }] =
-        useLazyQuery(GET_MOVIE_BY_NAME)
+    const { data, refetch } = useQuery(UserList)
+    const [fetchMovie, { data: movieData }] = useLazyQuery(GET_MOVIE_BY_NAME)
+    const [createUser] = useMutation(CREATE_USER)
 
     const handelChange = (e) => {
-        setInput(e.target.value)
+        setInput((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }))
     }
-
-    if (loading) return <h3>loading.....</h3>
-    if (error) return <h3>{error}</h3>
-
-    console.log(data)
-    console.log(movieData)
-
+    console.log(input)
     return (
         <div>
+            {/* create user  */}
+            <div>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="name"
+                    onChange={handelChange}
+                />
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="username"
+                    onChange={handelChange}
+                />
+                <input
+                    type="number"
+                    name="age"
+                    placeholder="age "
+                    onChange={handelChange}
+                />
+                <button
+                    onClick={() => {
+                        createUser({
+                            variables: {
+                                input: { ...input, age: Number(input.age) },
+                            },
+                        })
+                        refetch()
+                        setInput(null)
+                    }}
+                >
+                    creat user
+                </button>
+            </div>
             <ul>
-                {data.users?.map((item, i) => (
-                    <li key={i}>{item.name}</li>
-                ))}
+                {data &&
+                    data.users.map((item, i) => <li key={i}>{item.name}</li>)}
             </ul>
 
             {/* fetch */}
             <div>
                 <input
-                    value={input}
-                    onChange={handelChange}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     type="text"
                     placeholder="Search movies"
                 />
@@ -60,7 +70,7 @@ const DisplayData = () => {
                     onClick={() =>
                         fetchMovie({
                             variables: {
-                                name: input,
+                                name: search,
                             },
                         })
                     }
